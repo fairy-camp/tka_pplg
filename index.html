@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TKA PPLG - Latihan Soal</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>TKA PPLG</h1>
+      <p class="subtitle">Tes Kemampuan Akademik - Pengembangan Perangkat Lunak dan Gim</p>
+    </header>
+
+    <!-- Progress Bar -->
+    <div class="progress-wrapper">
+      <div class="progress-info">
+        <span id="progress-text">Soal 1 dari 30</span>
+        <span id="progress-percent">0%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+    </div>
+
+    <!-- Area Soal -->
+    <main id="quiz-area">
+      <div class="soal-header">
+        <span class="soal-number" id="soal-number">Soal 1</span>
+        <span class="soal-type" id="soal-type">Pilihan Ganda</span>
+      </div>
+      <div class="soal-body">
+        <p id="soal-text">Memuat soal...</p>
+        <div id="soal-image-container"></div>
+        <div id="soal-options" class="options"></div>
+      </div>
+    </main>
+
+    <!-- Navigasi -->
+    <footer class="nav-buttons">
+      <button id="btn-prev" class="btn btn-secondary" disabled>← Sebelumnya</button>
+      <button id="btn-next" class="btn btn-primary">Selanjutnya →</button>
+      <button id="btn-finish" class="btn btn-success hidden">Selesai & Lihat Nilai</button>
+    </footer>
+  </div>
+
+  <!-- Modal Hasil -->
+  <div id="result-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Hasil Latihan</h2>
+      <div class="result-score">
+        <span id="score-value">0</span>
+        <span class="score-label">/ 30</span>
+      </div>
+      <p id="score-message">-</p>
+      <div class="result-detail" id="result-detail"></div>
+      <button id="btn-restart" class="btn btn-primary">Ulangi Latihan</button>
+    </div>
+  </div>
+
+  <script src="soal.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
