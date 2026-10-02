@@ -17,7 +17,7 @@ body {
 .container {
   background: #fff;
   width: 100%;
-  max-width: 800px;
+  max-width: 1100px;
   border-radius: 16px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
   overflow: hidden;
@@ -73,10 +73,134 @@ header h1 {
   border-radius: 999px;
 }
 
+/* Layout Soal + Panel Nomor */
+.quiz-layout {
+  display: flex;
+  gap: 0;
+  flex: 1;
+}
+
+/* Panel Nomor Soal */
+.nomor-panel {
+  width: 240px;
+  background: #f9fafb;
+  border-right: 1px solid #e5e7eb;
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.nomor-panel h3 {
+  font-size: 0.9rem;
+  color: #4f46e5;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.nomor-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.nomor-btn {
+  aspect-ratio: 1;
+  border: 2px solid #e5e7eb;
+  background: #fff;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nomor-btn:hover {
+  border-color: #a5b4fc;
+  transform: scale(1.05);
+}
+
+.nomor-btn.answered {
+  background: #10b981;
+  border-color: #10b981;
+  color: #fff;
+}
+
+.nomor-btn.active {
+  background: #4f46e5;
+  border-color: #4f46e5;
+  color: #fff;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.3);
+}
+
+.nomor-btn.ragu {
+  background: #f59e0b;
+  border-color: #f59e0b;
+  color: #fff;
+}
+
+.nomor-btn.ragu.active {
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.4);
+}
+
+/* Legend */
+.legend {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: #6b7280;
+  padding-top: 8px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 2px solid #e5e7eb;
+  background: #fff;
+  display: inline-block;
+}
+
+.dot-active { background: #4f46e5; border-color: #4f46e5; }
+.dot-answered { background: #10b981; border-color: #10b981; }
+.dot-empty { background: #fff; border-color: #e5e7eb; }
+.dot-ragu { background: #f59e0b; border-color: #f59e0b; }
+
+.btn-ragu {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #f59e0b;
+  font-size: 0.8rem;
+  padding: 8px 12px;
+}
+
+.btn-ragu:hover {
+  background: #fde68a;
+}
+
+.btn-ragu.active {
+  background: #f59e0b;
+  color: #fff;
+}
+
 /* Soal */
 main {
   padding: 24px 30px;
-  min-height: 320px;
+  min-height: 420px;
+  flex: 1;
 }
 
 .soal-header {
@@ -251,6 +375,20 @@ main {
   margin-bottom: 16px;
 }
 
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.warning-text {
+  color: #dc2626;
+  font-size: 0.85rem;
+  margin-top: 8px;
+}
+
 .result-score {
   font-size: 3rem;
   font-weight: 800;
@@ -285,10 +423,159 @@ main {
   margin: 4px 0;
 }
 
+/* Modal Review / Pembahasan */
+.review-content {
+  max-width: 800px;
+  text-align: left;
+  padding: 24px;
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.review-header h2 {
+  margin: 0;
+}
+
+.btn-close {
+  background: #e5e7eb;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #374151;
+}
+
+.btn-close:hover {
+  background: #d1d5db;
+}
+
+.review-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.review-nav button {
+  width: 34px;
+  height: 34px;
+  border-radius: 6px;
+  border: 2px solid #e5e7eb;
+  background: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  color: #6b7280;
+}
+
+.review-nav button.benar {
+  background: #d1fae5;
+  border-color: #10b981;
+  color: #065f46;
+}
+
+.review-nav button.salah {
+  background: #fee2e2;
+  border-color: #ef4444;
+  color: #991b1b;
+}
+
+.review-nav button.active {
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.3);
+}
+
+.review-body {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.review-soal {
+  margin-bottom: 20px;
+}
+
+.review-soal h4 {
+  color: #4f46e5;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}
+
+.review-soal p {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: #374151;
+  margin-bottom: 10px;
+  white-space: pre-wrap;
+}
+
+.review-answer {
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  font-size: 0.88rem;
+}
+
+.review-answer.benar {
+  background: #d1fae5;
+  border-left: 4px solid #10b981;
+  color: #065f46;
+}
+
+.review-answer.salah {
+  background: #fee2e2;
+  border-left: 4px solid #ef4444;
+  color: #991b1b;
+}
+
+.review-pembahasan {
+  background: #eff6ff;
+  border-left: 4px solid #3b82f6;
+  padding: 12px 14px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  color: #1e3a8a;
+  line-height: 1.6;
+}
+
+.review-pembahasan strong {
+  color: #1e40af;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .quiz-layout {
+    flex-direction: column;
+  }
+  .nomor-panel {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .nomor-grid {
+    grid-template-columns: repeat(10, 1fr);
+  }
+  .legend {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+}
+
 @media (max-width: 600px) {
   header h1 { font-size: 1.4rem; }
   .subtitle { font-size: 0.75rem; }
   main { padding: 18px 20px; }
   .nav-buttons { padding: 12px 20px 20px; }
   .btn { padding: 10px 16px; font-size: 0.85rem; }
+  .nomor-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
 }
