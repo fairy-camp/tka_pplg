@@ -1,6 +1,7 @@
 // ===================== STATE =====================
 let currentIndex = 0;
 let jawabanUser = {}; // { soalId: value }
+let raguSet = new Set(); // set soalId yang ditandai ragu-ragu
 
 // ===================== ELEMEN =====================
 const elSoalNumber = document.getElementById('soal-number');
@@ -14,21 +15,34 @@ const elProgressFill = document.getElementById('progress-fill');
 const btnPrev = document.getElementById('btn-prev');
 const btnNext = document.getElementById('btn-next');
 const btnFinish = document.getElementById('btn-finish');
+const btnRagu = document.getElementById('btn-ragu');
+const nomorGrid = document.getElementById('nomor-grid');
+
+const confirmModal = document.getElementById('confirm-modal');
+const confirmAnswered = document.getElementById('confirm-answered');
+const confirmTotal = document.getElementById('confirm-total');
+const confirmWarning = document.getElementById('confirm-warning');
+const btnCancelFinish = document.getElementById('btn-cancel-finish');
+const btnConfirmFinish = document.getElementById('btn-confirm-finish');
+
 const resultModal = document.getElementById('result-modal');
 const scoreValue = document.getElementById('score-value');
 const scoreMessage = document.getElementById('score-message');
 const resultDetail = document.getElementById('result-detail');
 const btnRestart = document.getElementById('btn-restart');
+const btnReview = document.getElementById('btn-review');
+
+const reviewModal = document.getElementById('review-modal');
+const reviewNav = document.getElementById('review-nav');
+const reviewBody = document.getElementById('review-body');
+const btnCloseReview = document.getElementById('btn-close-review');
 
 // ===================== RENDER =====================
 function renderSoal() {
   const soal = SOAL[currentIndex];
 
-  // Header
   elSoalNumber.textContent = `Soal ${currentIndex + 1}`;
   elSoalType.textContent = soal.type;
-
-  // Pertanyaan
   elSoalText.textContent = soal.pertanyaan;
 
   // Gambar / SVG
@@ -51,8 +65,13 @@ function renderSoal() {
     renderSingleChoice(soal);
   }
 
-  // Progress
+  // Tombol ragu-ragu
+  btnRagu.classList.toggle('active', raguSet.has(soal.id));
+  btnRagu.textContent = raguSet.has(soal.id) ? '✓ Ditandai Ragu-ragu' : 'Tandai Ragu-ragu';
+
+  // Progress + nomor grid
   updateProgress();
+  renderNomorGrid();
 
   // Navigasi
   btnPrev.disabled = currentIndex === 0;
@@ -146,6 +165,40 @@ function renderBenarSalah(soal) {
   });
 }
 
+// Cek apakah soal sudah dijawab
+function isAnswered(soal) {
+  const jawab = jawabanUser[soal.id];
+  if (soal.type === "Benar/Salah") {
+    if (!jawab) return false;
+    return soal.pernyataan.every((_, i) => jawab[i] !== undefined);
+  } else if (soal.type === "Pilihan Ganda (Multi Jawaban)") {
+    return Array.isArray(jawab) && jawab.length > 0;
+  } else {
+    return jawab !== undefined && jawab !== null;
+  }
+}
+
+// Render grid nomor soal
+function renderNomorGrid() {
+  nomorGrid.innerHTML = '';
+  SOAL.forEach((soal, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'nomor-btn';
+    btn.textContent = i + 1;
+
+    if (i === currentIndex) btn.classList.add('active');
+    if (raguSet.has(soal.id)) btn.classList.add('ragu');
+    else if (isAnswered(soal)) btn.classList.add('answered');
+
+    btn.addEventListener('click', () => {
+      currentIndex = i;
+      renderSoal();
+    });
+
+    nomorGrid.appendChild(btn);
+  });
+}
+
 function updateProgress() {
   const total = SOAL.length;
   const current = currentIndex + 1;
@@ -171,14 +224,51 @@ btnNext.addEventListener('click', () => {
   }
 });
 
+btnRagu.addEventListener('click', () => {
+  const soalId = SOAL[currentIndex].id;
+  if (raguSet.has(soalId)) {
+    raguSet.delete(soalId);
+  } else {
+    raguSet.add(soalId);
+  }
+  renderSoal();
+});
+
+// ===================== FINISH =====================
 btnFinish.addEventListener('click', () => {
+  const total = SOAL.length;
+  let answered = 0;
+  SOAL.forEach(s => { if (isAnswered(s)) answered++; });
+
+  confirmAnswered.textContent = answered;
+  confirmTotal.textContent = total;
+
+  const belum = total - answered;
+  const ragu = raguSet.size;
+
+  let warning = '';
+  if (belum > 0) warning += `⚠️ Masih ada ${belum} soal yang belum dijawab. `;
+  if (ragu > 0) warning += `🤔 Ada ${ragu} soal yang ditandai ragu-ragu.`;
+  confirmWarning.textContent = warning;
+
+  confirmModal.classList.remove('hidden');
+});
+
+btnCancelFinish.addEventListener('click', () => {
+  confirmModal.classList.add('hidden');
+});
+
+btnConfirmFinish.addEventListener('click', () => {
+  confirmModal.classList.add('hidden');
   hitungNilai();
 });
 
 btnRestart.addEventListener('click', () => {
   currentIndex = 0;
   jawabanUser = {};
+  raguSet = new Set();
   resultModal.classList.add('hidden');
+  reviewModal.classList.add('hidden');
   renderSoal();
 });
 
@@ -227,6 +317,104 @@ function hitungNilai() {
   resultDetail.innerHTML = detail.map(d => `<p>${d}</p>`).join('');
 
   resultModal.classList.remove('hidden');
+}
+
+// ===================== REVIEW / PEMBAHASAN =====================
+btnReview.addEventListener('click', () => {
+  resultModal.classList.add('hidden');
+  reviewModal.classList.remove('hidden');
+  renderReviewNav(0);
+});
+
+btnCloseReview.addEventListener('click', () => {
+  reviewModal.classList.add('hidden');
+  resultModal.classList.remove('hidden');
+});
+
+function renderReviewNav(activeIndex) {
+  reviewNav.innerHTML = '';
+  SOAL.forEach((soal, i) => {
+    const btn = document.createElement('button');
+    btn.textContent = i + 1;
+
+    const benar = cekBenarSoal(soal);
+    btn.classList.add(benar ? 'benar' : 'salah');
+    if (i === activeIndex) btn.classList.add('active');
+
+    btn.addEventListener('click', () => {
+      renderReviewNav(i);
+      renderReviewBody(i);
+    });
+
+    reviewNav.appendChild(btn);
+  });
+  renderReviewBody(activeIndex);
+}
+
+function cekBenarSoal(soal) {
+  const jawab = jawabanUser[soal.id];
+  if (soal.type === "Benar/Salah") {
+    if (!jawab) return false;
+    return soal.pernyataan.every((p, i) => jawab[i] === p.jawaban);
+  } else if (soal.type === "Pilihan Ganda (Multi Jawaban)") {
+    const userArr = (jawab || []).slice().sort().join(',');
+    const keyArr = soal.jawaban.slice().sort().join(',');
+    return userArr === keyArr && userArr !== '';
+  } else {
+    return jawab === soal.jawaban;
+  }
+}
+
+function renderReviewBody(index) {
+  const soal = SOAL[index];
+  const jawab = jawabanUser[soal.id];
+  const benar = cekBenarSoal(soal);
+
+  let jawabanUserText = '';
+  let jawabanBenarText = '';
+
+  if (soal.type === "Benar/Salah") {
+    jawabanUserText = soal.pernyataan.map((p, i) => {
+      const v = jawab ? jawab[i] : undefined;
+      const label = v === true ? 'Benar' : v === false ? 'Salah' : 'Tidak dijawab';
+      return `• ${p.teks} → <strong>${label}</strong>`;
+    }).join('<br>');
+    jawabanBenarText = soal.pernyataan.map((p) => {
+      return `• ${p.teks} → <strong>${p.jawaban ? 'Benar' : 'Salah'}</strong>`;
+    }).join('<br>');
+  } else if (soal.type === "Pilihan Ganda (Multi Jawaban)") {
+    const userArr = jawab || [];
+    jawabanUserText = userArr.length
+      ? userArr.sort().map(i => `• ${soal.opsi[i]}`).join('<br>')
+      : 'Tidak dijawab';
+    jawabanBenarText = soal.jawaban.sort().map(i => `• ${soal.opsi[i]}`).join('<br>');
+  } else {
+    jawabanUserText = jawab !== undefined ? soal.opsi[jawab] : 'Tidak dijawab';
+    jawabanBenarText = soal.opsi[soal.jawaban];
+  }
+
+  reviewBody.innerHTML = `
+    <div class="review-soal">
+      <h4>Soal ${index + 1} — ${soal.type}</h4>
+      <p>${soal.pertanyaan}</p>
+      ${soal.svg ? soal.svg : (soal.image ? `<img src="${soal.image}" style="max-width:100%;border-radius:8px;margin-bottom:10px;" />` : '')}
+
+      <div class="review-answer ${benar ? 'benar' : 'salah'}">
+        <strong>${benar ? '✅ Jawaban Anda Benar' : '❌ Jawaban Anda Salah'}</strong><br>
+        <em>Jawaban Anda:</em><br>${jawabanUserText}
+      </div>
+
+      ${!benar ? `
+      <div class="review-answer benar">
+        <strong>Jawaban Benar:</strong><br>${jawabanBenarText}
+      </div>` : ''}
+
+      <div class="review-pembahasan">
+        <strong>💡 Pembahasan:</strong><br>
+        ${soal.pembahasan || 'Pembahasan belum tersedia.'}
+      </div>
+    </div>
+  `;
 }
 
 // ===================== INIT =====================
