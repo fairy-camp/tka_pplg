@@ -24,18 +24,34 @@
       </div>
     </div>
 
-    <!-- Area Soal -->
-    <main id="quiz-area">
-      <div class="soal-header">
-        <span class="soal-number" id="soal-number">Soal 1</span>
-        <span class="soal-type" id="soal-type">Pilihan Ganda</span>
-      </div>
-      <div class="soal-body">
-        <p id="soal-text">Memuat soal...</p>
-        <div id="soal-image-container"></div>
-        <div id="soal-options" class="options"></div>
-      </div>
-    </main>
+    <!-- Layout Utama: Soal + Panel Nomor -->
+    <div class="quiz-layout">
+      <!-- Panel Nomor Soal (CBT-style) -->
+      <aside class="nomor-panel">
+        <h3>Navigasi Soal</h3>
+        <div class="nomor-grid" id="nomor-grid"></div>
+        <div class="legend">
+          <div class="legend-item"><span class="dot dot-active"></span> Aktif</div>
+          <div class="legend-item"><span class="dot dot-answered"></span> Sudah dijawab</div>
+          <div class="legend-item"><span class="dot dot-empty"></span> Belum dijawab</div>
+          <div class="legend-item"><span class="dot dot-ragu"></span> Ragu-ragu</div>
+        </div>
+        <button id="btn-ragu" class="btn btn-ragu">Tandai Ragu-ragu</button>
+      </aside>
+
+      <!-- Area Soal -->
+      <main id="quiz-area">
+        <div class="soal-header">
+          <span class="soal-number" id="soal-number">Soal 1</span>
+          <span class="soal-type" id="soal-type">Pilihan Ganda</span>
+        </div>
+        <div class="soal-body">
+          <p id="soal-text">Memuat soal...</p>
+          <div id="soal-image-container"></div>
+          <div id="soal-options" class="options"></div>
+        </div>
+      </main>
+    </div>
 
     <!-- Navigasi -->
     <footer class="nav-buttons">
@@ -43,6 +59,19 @@
       <button id="btn-next" class="btn btn-primary">Selanjutnya →</button>
       <button id="btn-finish" class="btn btn-success hidden">Selesai & Lihat Nilai</button>
     </footer>
+  </div>
+
+  <!-- Modal Konfirmasi Selesai -->
+  <div id="confirm-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Selesaikan Latihan?</h2>
+      <p>Anda telah menjawab <strong id="confirm-answered">0</strong> dari <strong id="confirm-total">30</strong> soal.</p>
+      <p id="confirm-warning" class="warning-text"></p>
+      <div class="modal-actions">
+        <button id="btn-cancel-finish" class="btn btn-secondary">Kembali</button>
+        <button id="btn-confirm-finish" class="btn btn-success">Ya, Selesaikan</button>
+      </div>
+    </div>
   </div>
 
   <!-- Modal Hasil -->
@@ -55,7 +84,22 @@
       </div>
       <p id="score-message">-</p>
       <div class="result-detail" id="result-detail"></div>
-      <button id="btn-restart" class="btn btn-primary">Ulangi Latihan</button>
+      <div class="modal-actions">
+        <button id="btn-review" class="btn btn-secondary">Lihat Pembahasan</button>
+        <button id="btn-restart" class="btn btn-primary">Ulangi Latihan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Pembahasan -->
+  <div id="review-modal" class="modal hidden">
+    <div class="modal-content review-content">
+      <div class="review-header">
+        <h2>Pembahasan Soal</h2>
+        <button id="btn-close-review" class="btn-close">✕</button>
+      </div>
+      <div class="review-nav" id="review-nav"></div>
+      <div class="review-body" id="review-body"></div>
     </div>
   </div>
 
