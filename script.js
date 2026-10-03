@@ -1,7 +1,43 @@
+// ===================== KONFIGURASI GOOGLE SHEETS =====================
+// Ganti dengan URL Web App dari Apps Script Anda
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx0qgvfMY2mbr46szBYNlrFQbWgE8SRkUo2i6m7G4S2QPEQN_DSfHD9QEDmRYoJSHZdYg/exec";
+
+// ===================== FUNGSI KIRIM KE GOOGLE SHEETS =====================
+async function kirimKeSheets(nama, kelas, jumlahBenar, nilai) {
+  try {
+    const response = await fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify({
+        nama: nama,
+        kelas: kelas,
+        jumlahBenar: jumlahBenar,
+        nilai: nilai
+      })
+    });
+
+    console.log('✅ Hasil terkirim ke Google Sheets');
+    return true;
+  } catch (err) {
+    console.error('❌ Gagal mengirim ke Google Sheets:', err);
+    return false;
+  }
+}
+
 // ===================== STATE =====================
 let currentIndex = 0;
 let jawabanUser = {}; // { soalId: value }
 let raguSet = new Set(); // set soalId yang ditandai ragu-ragu
+let sudahKirim = false; // flag untuk mencegah duplikasi pengiriman
+
+// Identitas peserta
+let peserta = {
+  nama: "",
+  kelas: ""
+};
 
 // ===================== ELEMEN =====================
 const elSoalNumber = document.getElementById('soal-number');
@@ -31,14 +67,23 @@ const scoreMessage = document.getElementById('score-message');
 const resultDetail = document.getElementById('result-detail');
 const btnRestart = document.getElementById('btn-restart');
 const btnReview = document.getElementById('btn-review');
+const btnGantiPeserta = document.getElementById('btn-ganti-peserta');
 
 const reviewModal = document.getElementById('review-modal');
 const reviewNav = document.getElementById('review-nav');
 const reviewBody = document.getElementById('review-body');
 const btnCloseReview = document.getElementById('btn-close-review');
 
+// Elemen Welcome Screen
+const welcomeScreen = document.getElementById('welcome-screen');
+const quizContainer = document.getElementById('quiz-container');
+const formIdentitas = document.getElementById('form-identitas');
+const inputNama = document.getElementById('input-nama');
+const inputKelas = document.getElementById('input-kelas');
+const subtitlePeserta = document.getElementById('subtitle-peserta');
+const pesertaInfoResult = document.getElementById('peserta-info-result');
+
 // ===================== UTIL =====================
-// Escape karakter HTML agar tag seperti <a>, <link>, <p> tampil sebagai teks
 function escapeHtml(str) {
   if (str === null || str === undefined) return '';
   return String(str)
@@ -49,26 +94,70 @@ function escapeHtml(str) {
     .replace(/'/g, '&#39;');
 }
 
-// Escape tapi tetap izinkan <br> dan <strong> (untuk pembahasan yang sudah HTML)
 function escapeKeepFormatting(str) {
   if (str === null || str === undefined) return '';
-  // Pertama escape semua
   let s = String(str)
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
-  // Lalu kembalikan tag yang diizinkan
   s = s.replace(/&lt;br\s*\/?&gt;/gi, '<br>');
   s = s.replace(/&lt;strong&gt;/gi, '<strong>');
   s = s.replace(/&lt;\/strong&gt;/gi, '</strong>');
   s = s.replace(/&lt;em&gt;/gi, '<em>');
   s = s.replace(/&lt;\/em&gt;/gi, '</em>');
-  // Newline jadi <br>
   s = s.replace(/\n/g, '<br>');
   return s;
 }
+
+// ===================== WELCOME SCREEN =====================
+formIdentitas.addEventListener('submit', (e) => {
+  e.preventDefault();
+
+  const nama = inputNama.value.trim();
+  const kelas = inputKelas.value.trim();
+
+  if (!nama || !kelas) {
+    alert("Mohon isi Nama dan Kelas terlebih dahulu.");
+    return;
+  }
+
+  // Simpan ke state
+  peserta.nama = nama;
+  peserta.kelas = kelas;
+
+  // Simpan ke localStorage (opsional, agar tidak perlu input ulang)
+  try {
+    localStorage.setItem('tka_peserta', JSON.stringify(peserta));
+  } catch (err) {
+    console.warn('Tidak bisa menyimpan ke localStorage:', err);
+  }
+
+  // Update tampilan
+  subtitlePeserta.innerHTML = `Peserta: <strong>${escapeHtml(nama)}</strong> — Kelas <strong>${escapeHtml(kelas)}</strong>`;
+
+  // Sembunyikan welcome, tampilkan quiz
+  welcomeScreen.classList.add('hidden');
+  quizContainer.classList.remove('hidden');
+
+  // Render soal pertama
+  renderSoal();
+});
+
+// Auto-fill dari localStorage (jika ada)
+(function autoFillPeserta() {
+  try {
+    const saved = localStorage.getItem('tka_peserta');
+    if (saved) {
+      const data = JSON.parse(saved);
+      if (data.nama) inputNama.value = data.nama;
+      if (data.kelas) inputKelas.value = data.kelas;
+    }
+  } catch (err) {
+    // abaikan
+  }
+})();
 
 // ===================== RENDER =====================
 function renderSoal() {
@@ -78,7 +167,6 @@ function renderSoal() {
   elSoalType.textContent = soal.type;
   elSoalText.textContent = soal.pertanyaan;
 
-  // Gambar / SVG
   if (soal.svg) {
     elSoalImage.innerHTML = soal.svg;
   } else if (soal.image) {
@@ -87,7 +175,6 @@ function renderSoal() {
     elSoalImage.innerHTML = '';
   }
 
-  // Opsi jawaban
   elSoalOptions.innerHTML = '';
 
   if (soal.type === "Benar/Salah") {
@@ -98,15 +185,12 @@ function renderSoal() {
     renderSingleChoice(soal);
   }
 
-  // Tombol ragu-ragu
   btnRagu.classList.toggle('active', raguSet.has(soal.id));
   btnRagu.textContent = raguSet.has(soal.id) ? '✓ Ditandai Ragu-ragu' : 'Tandai Ragu-ragu';
 
-  // Progress + nomor grid
   updateProgress();
   renderNomorGrid();
 
-  // Navigasi
   btnPrev.disabled = currentIndex === 0;
   btnNext.classList.toggle('hidden', currentIndex === SOAL.length - 1);
   btnFinish.classList.toggle('hidden', currentIndex !== SOAL.length - 1);
@@ -198,7 +282,6 @@ function renderBenarSalah(soal) {
   });
 }
 
-// Cek apakah soal sudah dijawab
 function isAnswered(soal) {
   const jawab = jawabanUser[soal.id];
   if (soal.type === "Benar/Salah") {
@@ -211,7 +294,6 @@ function isAnswered(soal) {
   }
 }
 
-// Render grid nomor soal
 function renderNomorGrid() {
   nomorGrid.innerHTML = '';
   SOAL.forEach((soal, i) => {
@@ -300,9 +382,52 @@ btnRestart.addEventListener('click', () => {
   currentIndex = 0;
   jawabanUser = {};
   raguSet = new Set();
+  sudahKirim = false; // reset flag agar bisa kirim lagi setelah mengulang
   resultModal.classList.add('hidden');
   reviewModal.classList.add('hidden');
   renderSoal();
+});
+
+// ===================== GANTI PESERTA =====================
+btnGantiPeserta.addEventListener('click', () => {
+  const konfirmasi = confirm(
+    "Selesaikan sesi untuk peserta ini?\n\n" +
+    "Nama dan kelas akan dihapus, dan peserta berikutnya\n" +
+    "harus mengisi identitas dari awal."
+  );
+
+  if (!konfirmasi) return;
+
+  // Hapus data peserta dari localStorage
+  try {
+    localStorage.removeItem('tka_peserta');
+  } catch (err) {
+    console.warn('Gagal menghapus localStorage:', err);
+  }
+
+  // Reset semua state
+  currentIndex = 0;
+  jawabanUser = {};
+  raguSet = new Set();
+  sudahKirim = false;
+  peserta.nama = "";
+  peserta.kelas = "";
+
+  // Kosongkan input
+  inputNama.value = "";
+  inputKelas.value = "";
+
+  // Sembunyikan semua modal
+  resultModal.classList.add('hidden');
+  reviewModal.classList.add('hidden');
+  confirmModal.classList.add('hidden');
+
+  // Sembunyikan quiz, tampilkan welcome screen
+  quizContainer.classList.add('hidden');
+  welcomeScreen.classList.remove('hidden');
+
+  // Fokus ke input nama
+  inputNama.focus();
 });
 
 // ===================== HITUNG NILAI =====================
@@ -337,6 +462,12 @@ function hitungNilai() {
   const total = SOAL.length;
   const nilai = Math.round((benar / total) * 100);
 
+  // Tampilkan info peserta di modal hasil
+  pesertaInfoResult.innerHTML = `
+    <strong>${escapeHtml(peserta.nama)}</strong><br>
+    Kelas: ${escapeHtml(peserta.kelas)}
+  `;
+
   scoreValue.textContent = benar;
   document.querySelector('.score-label').textContent = `/ ${total}`;
 
@@ -350,6 +481,12 @@ function hitungNilai() {
   resultDetail.innerHTML = detail.map(d => `<p>${d}</p>`).join('');
 
   resultModal.classList.remove('hidden');
+
+  // ===================== KIRIM KE GOOGLE SHEETS =====================
+  if (!sudahKirim) {
+    kirimKeSheets(peserta.nama, peserta.kelas, benar, nilai);
+    sudahKirim = true;
+  }
 }
 
 // ===================== REVIEW / PEMBAHASAN =====================
@@ -451,4 +588,5 @@ function renderReviewBody(index) {
 }
 
 // ===================== INIT =====================
-renderSoal();
+// Tidak langsung render soal, tunggu form identitas disubmit.
+// renderSoal() dipanggil setelah form disubmit (di handler formIdentitas).
