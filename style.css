@@ -14,6 +14,138 @@ body {
   padding: 20px;
 }
 
+/* ================= WELCOME SCREEN ================= */
+.welcome-screen {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  z-index: 200;
+  overflow-y: auto;
+}
+
+.welcome-card {
+  background: #fff;
+  border-radius: 20px;
+  padding: 40px 36px;
+  max-width: 460px;
+  width: 100%;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35);
+  text-align: center;
+  animation: slideUp 0.5s ease;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.welcome-icon {
+  font-size: 3.5rem;
+  margin-bottom: 10px;
+}
+
+.welcome-card h1 {
+  color: #4f46e5;
+  font-size: 1.9rem;
+  margin-bottom: 8px;
+  letter-spacing: 1px;
+}
+
+.welcome-subtitle {
+  color: #6b7280;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin-bottom: 28px;
+}
+
+.form-identitas {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: left;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.form-group input {
+  padding: 12px 16px;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: #1f2937;
+  transition: all 0.2s ease;
+  background: #f9fafb;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #4f46e5;
+  background: #fff;
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
+}
+
+.form-group input::placeholder {
+  color: #9ca3af;
+}
+
+.form-info {
+  background: #eef2ff;
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-size: 0.82rem;
+  color: #4338ca;
+  line-height: 1.8;
+  text-align: left;
+}
+
+.form-info p {
+  margin: 0;
+}
+
+.btn-start {
+  padding: 14px 24px;
+  font-size: 1rem;
+  margin-top: 4px;
+  width: 100%;
+}
+
+/* Info Peserta di Header */
+.subtitle strong {
+  color: #fff;
+  font-weight: 700;
+}
+
+/* Info Peserta di Modal Hasil */
+.peserta-info {
+  background: #f3f4f6;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  font-size: 0.88rem;
+  color: #374151;
+  line-height: 1.6;
+}
+
+.peserta-info strong {
+  color: #4f46e5;
+}
+
+/* ================= LAYOUT UTAMA ================= */
 .container {
   background: #fff;
   width: 100%;
@@ -343,6 +475,15 @@ main {
   background: #059669;
 }
 
+.btn-danger {
+  background: #dc2626;
+  color: #fff;
+}
+
+.btn-danger:hover {
+  background: #b91c1c;
+}
+
 .hidden {
   display: none !important;
 }
@@ -577,5 +718,11 @@ main {
   .btn { padding: 10px 16px; font-size: 0.85rem; }
   .nomor-grid {
     grid-template-columns: repeat(6, 1fr);
+  }
+  .welcome-card {
+    padding: 30px 24px;
+  }
+  .welcome-card h1 {
+    font-size: 1.5rem;
   }
 }
