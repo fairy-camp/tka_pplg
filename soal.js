@@ -158,7 +158,7 @@ const SOAL = [
     type: "Pilihan Ganda",
     pertanyaan: "Dalam HTML, tag yang digunakan untuk membuat tautan ke halaman lain adalah …",
     image: null,
-    opsi: ["<link>", "<a>", "<href>", "<url>", "<p>"],
+    opsi: ["&lt;link&gt;", "&lt;a&gt;", "&lt;href&gt;", "&lt;url&gt;", "&lt;p&gt;"],
     jawaban: 1,
     pembahasan: "Tag <a> (anchor) digunakan untuk membuat hyperlink. Atribut href di dalamnya menentukan tujuan tautan, contoh: <a href='https://example.com'>Klik</a>. Tag <link> untuk menghubungkan file eksternal (CSS), <href> dan <url> bukan tag HTML, <p> untuk paragraf."
   },
