@@ -37,6 +37,39 @@ const reviewNav = document.getElementById('review-nav');
 const reviewBody = document.getElementById('review-body');
 const btnCloseReview = document.getElementById('btn-close-review');
 
+// ===================== UTIL =====================
+// Escape karakter HTML agar tag seperti <a>, <link>, <p> tampil sebagai teks
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// Escape tapi tetap izinkan <br> dan <strong> (untuk pembahasan yang sudah HTML)
+function escapeKeepFormatting(str) {
+  if (str === null || str === undefined) return '';
+  // Pertama escape semua
+  let s = String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+  // Lalu kembalikan tag yang diizinkan
+  s = s.replace(/&lt;br\s*\/?&gt;/gi, '<br>');
+  s = s.replace(/&lt;strong&gt;/gi, '<strong>');
+  s = s.replace(/&lt;\/strong&gt;/gi, '</strong>');
+  s = s.replace(/&lt;em&gt;/gi, '<em>');
+  s = s.replace(/&lt;\/em&gt;/gi, '</em>');
+  // Newline jadi <br>
+  s = s.replace(/\n/g, '<br>');
+  return s;
+}
+
 // ===================== RENDER =====================
 function renderSoal() {
   const soal = SOAL[currentIndex];
@@ -141,7 +174,7 @@ function renderBenarSalah(soal) {
     if (val !== undefined) div.classList.add('selected');
 
     div.innerHTML = `
-      <div style="font-weight:600; margin-bottom:8px; color:#374151;">${p.teks}</div>
+      <div style="font-weight:600; margin-bottom:8px; color:#374151;">${escapeHtml(p.teks)}</div>
       <div style="display:flex; gap:20px;">
         <label style="cursor:pointer;">
           <input type="radio" name="bs-${soal.id}-${i}" value="true" ${val === true ? 'checked' : ''} /> Benar
@@ -377,26 +410,26 @@ function renderReviewBody(index) {
     jawabanUserText = soal.pernyataan.map((p, i) => {
       const v = jawab ? jawab[i] : undefined;
       const label = v === true ? 'Benar' : v === false ? 'Salah' : 'Tidak dijawab';
-      return `• ${p.teks} → <strong>${label}</strong>`;
+      return `• ${escapeHtml(p.teks)} → <strong>${label}</strong>`;
     }).join('<br>');
     jawabanBenarText = soal.pernyataan.map((p) => {
-      return `• ${p.teks} → <strong>${p.jawaban ? 'Benar' : 'Salah'}</strong>`;
+      return `• ${escapeHtml(p.teks)} → <strong>${p.jawaban ? 'Benar' : 'Salah'}</strong>`;
     }).join('<br>');
   } else if (soal.type === "Pilihan Ganda (Multi Jawaban)") {
     const userArr = jawab || [];
     jawabanUserText = userArr.length
-      ? userArr.sort().map(i => `• ${soal.opsi[i]}`).join('<br>')
+      ? userArr.slice().sort().map(i => `• ${escapeHtml(soal.opsi[i])}`).join('<br>')
       : 'Tidak dijawab';
-    jawabanBenarText = soal.jawaban.sort().map(i => `• ${soal.opsi[i]}`).join('<br>');
+    jawabanBenarText = soal.jawaban.slice().sort().map(i => `• ${escapeHtml(soal.opsi[i])}`).join('<br>');
   } else {
-    jawabanUserText = jawab !== undefined ? soal.opsi[jawab] : 'Tidak dijawab';
-    jawabanBenarText = soal.opsi[soal.jawaban];
+    jawabanUserText = jawab !== undefined ? escapeHtml(soal.opsi[jawab]) : 'Tidak dijawab';
+    jawabanBenarText = escapeHtml(soal.opsi[soal.jawaban]);
   }
 
   reviewBody.innerHTML = `
     <div class="review-soal">
       <h4>Soal ${index + 1} — ${soal.type}</h4>
-      <p>${soal.pertanyaan}</p>
+      <p>${escapeHtml(soal.pertanyaan)}</p>
       ${soal.svg ? soal.svg : (soal.image ? `<img src="${soal.image}" style="max-width:100%;border-radius:8px;margin-bottom:10px;" />` : '')}
 
       <div class="review-answer ${benar ? 'benar' : 'salah'}">
@@ -411,7 +444,7 @@ function renderReviewBody(index) {
 
       <div class="review-pembahasan">
         <strong>💡 Pembahasan:</strong><br>
-        ${soal.pembahasan || 'Pembahasan belum tersedia.'}
+        ${escapeKeepFormatting(soal.pembahasan) || 'Pembahasan belum tersedia.'}
       </div>
     </div>
   `;
